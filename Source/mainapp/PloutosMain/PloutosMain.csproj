@@ -85,19 +85,24 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="DataLayer\DataEnums.cs" />
+    <Compile Include="DataLayer\DataObjects.cs" />
     <Compile Include="DataLayer\IDataLayer.cs" />
     <Compile Include="DataLayer\SqlDataLayer.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Account.cs" />
+    <Compile Include="Models\AssetAccount.cs" />
+    <Compile Include="Models\CashAssetAccount.cs" />
     <Compile Include="Models\Category.cs" />
+    <Compile Include="Models\CreditAssetAccount.cs" />
+    <Compile Include="Models\IAccount.cs" />
     <Compile Include="Models\IncomeAccount.cs" />
     <Compile Include="Models\SalaryIncomeAccount.cs" />
+    <Compile Include="Models\SavingsAssetAccount.cs" />
     <Compile Include="Models\TimePeriod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Repositories\AccountRepo.cs" />
+    <Compile Include="Repositories\AssetAccountRepo.cs" />
     <Compile Include="Repositories\IAccountRepo.cs" />
     <Compile Include="Repositories\ICategoryRepo.cs" />
     <Compile Include="Repositories\ITimePeriodRepo.cs" />

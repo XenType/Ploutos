@@ -8,9 +8,6 @@ namespace PloutosMain.DataLayer
 {
     public class SqlDataLayer
     {
-        public Account GetAccount(int Id)
-        {
-            return null;
-        }
+
     }
 }
