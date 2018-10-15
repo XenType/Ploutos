@@ -13,7 +13,9 @@
                 public const string AccountType = "Type";
                 public const string AssetAccountType = "SubType";
                 public const string Balance = "Balance";
-                public const string LinkedExpenceAccountId = "LinkId";
+                public const string CreditLine = "Limit";
+                public const string InterestRate = "Rate";
+                public const string StatementTimePeriodId = "TimePeriodId";
             }
         }
     }

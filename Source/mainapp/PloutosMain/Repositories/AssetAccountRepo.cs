@@ -1,4 +1,5 @@
 ﻿using PloutosMain.DataLayer;
+using PloutosMain.Exceptions;
 using PloutosMain.Models;
 using System.Data;
 
@@ -22,11 +23,11 @@ namespace PloutosMain.Repositories
         public Account GetAccount(int accountId)
         {
             DataTable accountData = _dataLayer.GetRecord(DataObjects.DbTarget.Account, accountId);
-            //exceptoin here
-            if (accountData == null)
-                return _account;
+            
+            if (accountData == null || accountData.Rows.Count < 1)
+                throw new AccountNotFoundException(accountId, AccountType.Asset);
 
-            AssetAccount assetAccount = CreateBasicAssetAccount(accountData.Rows[0]);
+            AssetAccount assetAccount = MapBasicAssetAccount(accountData.Rows[0]);
             switch (assetAccount.AssetAccountType)
             {
                 case AssetAccountType.Cash:
@@ -39,10 +40,12 @@ namespace PloutosMain.Repositories
                     MapSavingsAccount(assetAccount, accountData.Rows[0]);
                     break;
             }
+
             return _account;
         }
         public Account InsertAccount(Account newAccount)
         {
+
             return null;
         }
         public Account UpdateAccount(Account modifiedAccount)
@@ -51,7 +54,7 @@ namespace PloutosMain.Repositories
         }
         public void DeleteAccount(int accountId)
         {
-
+            _dataLayer.DeleteRecord(DataObjects.DbTarget.Account, accountId);
         }
         #endregion
 
@@ -60,22 +63,7 @@ namespace PloutosMain.Repositories
         #endregion
 
         #region private data mapping methods
-        private void MapCashAccount(AssetAccount assetAccount, DataRow accountData)
-        {
-            CashAssetAccount cashAccount = new CashAssetAccount(assetAccount);
-            _account = cashAccount;
-        }
-        private void MapCreditAccount(AssetAccount assetAccount, DataRow accountData)
-        {
-            CreditAssetAccount creditAccount = new CreditAssetAccount(assetAccount);
-            creditAccount.LinkedExpenseAccountId = int.Parse(accountData[DataObjects.Accounts.Columns.LinkedExpenceAccountId].ToString());
-            _account = creditAccount;
-        }
-        private void MapSavingsAccount(AssetAccount assetAccount, DataRow accountData)
-        {
-
-        }
-        private AssetAccount CreateBasicAssetAccount(DataRow accountData)
+        private AssetAccount MapBasicAssetAccount(DataRow accountData)
         {
             AssetAccount assetAccount = new AssetAccount();
             assetAccount.Id = int.Parse(accountData[DataObjects.Accounts.Columns.Id].ToString());
@@ -84,6 +72,27 @@ namespace PloutosMain.Repositories
             assetAccount.AssetAccountType = (AssetAccountType)int.Parse(accountData[DataObjects.Accounts.Columns.AssetAccountType].ToString());
             assetAccount.Balance = decimal.Parse(accountData[DataObjects.Accounts.Columns.Balance].ToString());
             return assetAccount;
+        }
+        private void MapCashAccount(AssetAccount assetAccount, DataRow accountData)
+        {
+            CashAssetAccount cashAccount = new CashAssetAccount(assetAccount);
+            _account = cashAccount;
+        }
+        private void MapCreditAccount(AssetAccount assetAccount, DataRow accountData)
+        {
+            CreditAssetAccount creditAccount = new CreditAssetAccount(assetAccount);
+            creditAccount.CreditLine = decimal.Parse(accountData[DataObjects.Accounts.Columns.CreditLine].ToString());
+            creditAccount.InterestRate = decimal.Parse(accountData[DataObjects.Accounts.Columns.InterestRate].ToString());
+            //TODO: Update when TimePeriod is implemented
+            _account = creditAccount;
+        }
+        private void MapSavingsAccount(AssetAccount assetAccount, DataRow accountData)
+        {
+            SavingsAssetAccount savingsAccount = new SavingsAssetAccount(assetAccount);
+            savingsAccount.InterestRate = decimal.Parse(accountData[DataObjects.Accounts.Columns.InterestRate].ToString());
+            //TODO: Update when TimePeriod is implemented
+            _account = savingsAccount;
+
         }
         #endregion
     }

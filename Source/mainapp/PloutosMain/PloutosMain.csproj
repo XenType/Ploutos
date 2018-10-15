@@ -88,6 +88,7 @@
     <Compile Include="DataLayer\DataObjects.cs" />
     <Compile Include="DataLayer\IDataLayer.cs" />
     <Compile Include="DataLayer\SqlDataLayer.cs" />
+    <Compile Include="Exceptions\CustomExceptions.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -96,7 +97,7 @@
     <Compile Include="Models\CashAssetAccount.cs" />
     <Compile Include="Models\Category.cs" />
     <Compile Include="Models\CreditAssetAccount.cs" />
-    <Compile Include="Models\IAccount.cs" />
+    <Compile Include="Models\ExpenseAccount.cs" />
     <Compile Include="Models\IncomeAccount.cs" />
     <Compile Include="Models\SalaryIncomeAccount.cs" />
     <Compile Include="Models\SavingsAssetAccount.cs" />
@@ -120,7 +121,6 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Controllers\" />
-    <Folder Include="Exceptions\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
