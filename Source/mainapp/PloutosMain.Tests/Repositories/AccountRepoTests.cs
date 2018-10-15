@@ -39,6 +39,25 @@ namespace PloutosMain.Tests.Repositories
 
         #endregion
 
+        #region Exception Tests        
+        [TestMethod]
+        public void WhenAccountDoesNotExist_CorrectExceptionIsThrown()
+        {
+            Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
+            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object);
+            Exception actualException = new Exception();
+            try
+            {
+                SavingsAssetAccount actualAccount = (SavingsAssetAccount)accountRepo.GetAccount(expectedNotFoundAssetAccount.Id);
+            }
+            catch (Exception e)
+            {
+                actualException = e;
+            }
+            Assert.AreEqual(expectedAccountNotFoundException.Message, actualException.Message);
+        }
+        #endregion
+
         #region Asset Account Retrieval Tests
         // DataLayer Command Usage
         [TestMethod]
@@ -128,33 +147,16 @@ namespace PloutosMain.Tests.Repositories
             Assert.AreEqual(expectedSavingsAssetAccount.InterestRate, actualAccount.InterestRate);
             //TODO: Update when TimePeriod is implemented
         }
-
-        // Exception Testings
-        [TestMethod]
-        public void WhenAccountDoesNotExist_CorrectExceptionIsThrown()
-        {
-            Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
-            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object);
-            Exception actualException = new Exception();
-            try
-            {
-                SavingsAssetAccount actualAccount = (SavingsAssetAccount)accountRepo.GetAccount(0);
-            }
-            catch (Exception e)
-            {
-                actualException = e;
-            }
-            Assert.AreEqual(expectedAccountNotFoundException.Message, actualException.Message);
-        }
         #endregion
 
-        #region Asset Account Creation Tests1
+        #region Asset Account Creation Tests
+
         #endregion
 
         #region Asset Account Editing Tests
+
         #endregion
-
-
+        
         #region Asset Account Removal Tests
         [TestMethod]
         public void WhenDeletingAssetAccount_CorrectDbCallsAreMade()

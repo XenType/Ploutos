@@ -107,6 +107,7 @@
     <Compile Include="Repositories\IAccountRepo.cs" />
     <Compile Include="Repositories\ICategoryRepo.cs" />
     <Compile Include="Repositories\ITimePeriodRepo.cs" />
+    <Compile Include="Repositories\TimePeriodRepo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

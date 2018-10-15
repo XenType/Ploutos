@@ -22,4 +22,21 @@ namespace PloutosMain.Exceptions
         {
         }
     }
+
+    public class TimePeriodNotFoundException : Exception
+    {
+        public TimePeriodNotFoundException()
+        {
+        }
+
+        public TimePeriodNotFoundException(int timePeriodId)
+            : base($"TimePeriod {timePeriodId} not found.")
+        {
+        }
+
+        public TimePeriodNotFoundException(int timePeriodId, Exception inner)
+            : base($"TimePeriod {timePeriodId} not found.", inner)
+        {
+        }
+    }
 }

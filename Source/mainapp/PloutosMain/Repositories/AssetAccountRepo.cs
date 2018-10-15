@@ -41,16 +41,16 @@ namespace PloutosMain.Repositories
                     break;
             }
 
+            accountData.Dispose();
             return _account;
         }
         public Account InsertAccount(Account newAccount)
         {
-
-            return null;
+            return _account;
         }
         public Account UpdateAccount(Account modifiedAccount)
         {
-            return null;
+            return _account;
         }
         public void DeleteAccount(int accountId)
         {
