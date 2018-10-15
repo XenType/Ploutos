@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2036
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PloutosMain", "PloutosMain\PloutosMain.csproj", "{0924C421-785F-4AFF-824D-7CE3D20BCC34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PloutosMain.Tests", "PloutosMain.Tests\PloutosMain.Tests.csproj", "{67CF8216-0A74-4139-83EC-22D3EF5FB28D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0924C421-785F-4AFF-824D-7CE3D20BCC34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0924C421-785F-4AFF-824D-7CE3D20BCC34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0924C421-785F-4AFF-824D-7CE3D20BCC34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0924C421-785F-4AFF-824D-7CE3D20BCC34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67CF8216-0A74-4139-83EC-22D3EF5FB28D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67CF8216-0A74-4139-83EC-22D3EF5FB28D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67CF8216-0A74-4139-83EC-22D3EF5FB28D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67CF8216-0A74-4139-83EC-22D3EF5FB28D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3F8021E5-526D-47ED-AD66-9F27F59F4DF9}
+	EndGlobalSection
+EndGlobal
