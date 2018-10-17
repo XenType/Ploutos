@@ -39,4 +39,20 @@ namespace PloutosMain.Exceptions
         {
         }
     }
+    public class TimePeriodFailedToReturnAfterInsertException : Exception
+    {
+        public TimePeriodFailedToReturnAfterInsertException()
+        {
+        }
+
+        public TimePeriodFailedToReturnAfterInsertException(string name, int accountId)
+            : base($"New TimePeriod '{name}' for AccountId {accountId} failed to return after insert.")
+        {
+        }
+
+        public TimePeriodFailedToReturnAfterInsertException(string name, int accountId, Exception inner)
+            : base($"New TimePeriod '{name}' for AccountId {accountId} failed to return after insert.", inner)
+        {
+        }
+    }
 }
