@@ -16,13 +16,13 @@ namespace PloutosMain.Tests.Repositories
         #region Test Mock Objects
         private TimePeriod expectedNotFoundTimePeriod;
         private TimePeriod expectedExampleTimePeriod;
-
+        private TimePeriod expectedUpdatedTimePeriod;
         private TimePeriodNotFoundException expectedTimePeriodNotFoundException;
         #endregion
 
         #region Test Constants
         private const int expectedNumberOfTimePeriodInsertValues = 6;
-        private const int expectedNumberOfAccountToTimePeriodLinkInsertValues = 2;
+        private const int expectedNumberOfTimePeriodUpdateValues = 6;
         private const int expectedDeleteTimePeriodId = 11;
         #endregion
 
@@ -32,7 +32,7 @@ namespace PloutosMain.Tests.Repositories
         {
             expectedNotFoundTimePeriod = CreateExpectedNotFoundTimePeriod();
             expectedExampleTimePeriod = CreateExpectedExampleTimePeriod();
-
+            expectedUpdatedTimePeriod = CreateUpdatedExampleTimePeriod();
             expectedTimePeriodNotFoundException = new TimePeriodNotFoundException(expectedNotFoundTimePeriod.Id);
         }
         #endregion
@@ -107,7 +107,7 @@ namespace PloutosMain.Tests.Repositories
 
         #region Time Period Creation Tests
         [TestMethod]
-        public void WhenInsertingTimePeriodData_CorrectTimePeriodInsertDbCallIsMade()
+        public void WhenInsertingTimePeriodData_CorrectTimePeriodDbCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
             ITimePeriodRepo timePeriodRepo = new TimePeriodRepo(mockDataLayer.Object);
@@ -125,25 +125,9 @@ namespace PloutosMain.Tests.Repositories
                      (int)y[DataObjects.TimePeriods.Columns.OwnerAccountId] == expectedExampleTimePeriod.OwnerAccountId)),
                 Times.Once);
         }
-        [TestMethod]
-        public void WhenInsertingTimePeriodData_CorrectAccountToTimePeriodLinkInsertDbCallsAreMade()
-        {
-            Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
-            ITimePeriodRepo timePeriodRepo = new TimePeriodRepo(mockDataLayer.Object);
-            TimePeriod newTimePeriod = CreateExpectedExampleTimePeriod();
-            TimePeriod actualTimePeriod = timePeriodRepo.InsertTimePeriod(newTimePeriod);
 
-            mockDataLayer.Verify(x => x.InsertRecord(
-                It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.AccountToTimePeriodLink),
-                It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfAccountToTimePeriodLinkInsertValues &&
-                     (int)y[DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId] == expectedExampleTimePeriod.Id &&
-                     ((int)y[DataObjects.AccountToTimePeriodLink.Columns.AccountId] == expectedExampleTimePeriod.LinkedAccountList[0] 
-                     ||
-                     (int)y[DataObjects.AccountToTimePeriodLink.Columns.AccountId] == expectedExampleTimePeriod.LinkedAccountList[1]))),
-                Times.Exactly(2));
-        }
         [TestMethod]
-        public void WhenInsertTimePeriodData_CorrectTimePeriodObjectIsReturned()
+        public void WhenInsertingTimePeriodData_CorrectTimePeriodObjectIsReturned()
         {
             Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
             ITimePeriodRepo timePeriodRepo = new TimePeriodRepo(mockDataLayer.Object);
@@ -151,15 +135,69 @@ namespace PloutosMain.Tests.Repositories
             TimePeriod actualTimePeriod = timePeriodRepo.InsertTimePeriod(newTimePeriod);
 
             Assert.AreEqual(expectedExampleTimePeriod.Id, actualTimePeriod.Id);
-            Assert.AreEqual(expectedExampleTimePeriod.LinkedAccountList.Count, actualTimePeriod.LinkedAccountList.Count);
+            Assert.AreEqual(0, actualTimePeriod.LinkedAccountList.Count);
         }
         #endregion
 
-            #region Time Period Editing Tests
+        #region Time Period Editing Tests
+        [TestMethod]
+        public void WhenUpdatingTimePeriodData_CorrectTimePeriodDbCallIsMade()
+        {
+            Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
+            ITimePeriodRepo timePeriodRepo = new TimePeriodRepo(mockDataLayer.Object);
+            TimePeriod updatedTimePeriod = CreateUpdatedExampleTimePeriod();
+            TimePeriod actualTimePeriod = timePeriodRepo.UpdateTimePeriod(updatedTimePeriod);
+            /// Expectations
+            /// A call will be made to save the asset account data
+            mockDataLayer.Verify(x => x.UpdateRecord(
+                It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.TimePeriod),
+                It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfTimePeriodUpdateValues &&
+                     (string)y[DataObjects.TimePeriods.Columns.Name] == expectedUpdatedTimePeriod.Name &&
+                     (DateTime)y[DataObjects.TimePeriods.Columns.LastOccurance] == expectedUpdatedTimePeriod.LastOccurance &&
+                     (PeriodMethod)y[DataObjects.TimePeriods.Columns.PeriodMethod] == expectedUpdatedTimePeriod.PeriodMethod &&
+                     (PeriodType)y[DataObjects.TimePeriods.Columns.PeriodType] == expectedUpdatedTimePeriod.PeriodType &&
+                     (int)y[DataObjects.TimePeriods.Columns.PeriodValue] == expectedUpdatedTimePeriod.PeriodValue &&
+                     (int)y[DataObjects.TimePeriods.Columns.OwnerAccountId] == expectedUpdatedTimePeriod.OwnerAccountId),
+                It.Is<int>(y => y == expectedUpdatedTimePeriod.Id)),
+                Times.Once);
+            /// A call will be made to retrieve a list of account ids linked to this time period
+            mockDataLayer.Verify(x => x.GetRecords(
+               It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.AccountToTimePeriodLink),
+               It.Is<Dictionary<string, object>>(y => (int)y[DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId] == expectedUpdatedTimePeriod.Id)),
+               Times.Once);
+        }
+        [TestMethod]
+        public void WhenUpdatingTimePeriodData_CorrectPropertiesAreMapped()
+        {
+            Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
+            ITimePeriodRepo timePeriodRepo = new TimePeriodRepo(mockDataLayer.Object);
+            TimePeriod updatedTimePeriod = CreateUpdatedExampleTimePeriod();
+            TimePeriod actualTimePeriod = timePeriodRepo.UpdateTimePeriod(updatedTimePeriod);
 
-            #endregion
+            Assert.AreEqual(expectedUpdatedTimePeriod.Id, actualTimePeriod.Id);
+            Assert.AreEqual(expectedUpdatedTimePeriod.Name, actualTimePeriod.Name);
+            Assert.AreEqual(expectedUpdatedTimePeriod.LastOccurance, actualTimePeriod.LastOccurance);
+            Assert.AreEqual(expectedUpdatedTimePeriod.PeriodMethod, actualTimePeriod.PeriodMethod);
+            Assert.AreEqual(expectedUpdatedTimePeriod.PeriodType, actualTimePeriod.PeriodType);
+            Assert.AreEqual(expectedUpdatedTimePeriod.PeriodValue, actualTimePeriod.PeriodValue);
+            Assert.AreEqual(expectedUpdatedTimePeriod.OwnerAccountId, actualTimePeriod.OwnerAccountId);
+        }
+        [TestMethod]
+        public void WhenUpdatingTimePeriodData_CorrectLinkedAccountsAreMapped()
+        {
+            Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
+            ITimePeriodRepo timePeriodRepo = new TimePeriodRepo(mockDataLayer.Object);
+            TimePeriod updatedTimePeriod = CreateUpdatedExampleTimePeriod();
+            TimePeriod actualTimePeriod = timePeriodRepo.UpdateTimePeriod(updatedTimePeriod);
 
-            #region Time Period Removal Tests
+            Assert.AreEqual(expectedUpdatedTimePeriod.LinkedAccountList.Count, actualTimePeriod.LinkedAccountList.Count);
+            for (int i = 0; i < expectedUpdatedTimePeriod.LinkedAccountList.Count; i++)
+                Assert.AreEqual(expectedUpdatedTimePeriod.LinkedAccountList[i], actualTimePeriod.LinkedAccountList[i]);
+            
+        }
+        #endregion
+
+        #region Time Period Removal Tests
         [TestMethod]
         public void WhenDeletingTimePeriod_CorrectDbCallsAreMade()
         {
@@ -184,14 +222,16 @@ namespace PloutosMain.Tests.Repositories
         private Mock<IDataLayer> MockTimePeriodRequests()
         {
             Mock<IDataLayer> dataLayer = new Mock<IDataLayer>();
+            //get
             dataLayer.Setup(x => x.GetRecord(
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.TimePeriod),
                 It.Is<int>(y => y == expectedExampleTimePeriod.Id))
-                ).Returns(CreateMockExampleTimePeriodDataTable());
+                ).Returns(CreateMockExampleTimePeriodDataTable(expectedExampleTimePeriod));
             dataLayer.Setup(x => x.GetRecords(
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.AccountToTimePeriodLink),
                 It.Is<Dictionary<string, object>>(y => (int)y[DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId] == expectedExampleTimePeriod.Id))
-                ).Returns(CreateMockExampleAccountToTimePeriodDataTable());
+                ).Returns(CreateMockExampleAccountToTimePeriodDataTable(expectedExampleTimePeriod.Id, expectedExampleTimePeriod.LinkedAccountList));
+            //insert
             dataLayer.Setup(x => x.InsertRecord(
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.TimePeriod),
                 It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfTimePeriodInsertValues &&
@@ -201,32 +241,36 @@ namespace PloutosMain.Tests.Repositories
                      (PeriodType)y[DataObjects.TimePeriods.Columns.PeriodType] == expectedExampleTimePeriod.PeriodType &&
                      (int)y[DataObjects.TimePeriods.Columns.PeriodValue] == expectedExampleTimePeriod.PeriodValue &&
                      (int)y[DataObjects.TimePeriods.Columns.OwnerAccountId] == expectedExampleTimePeriod.OwnerAccountId))
-                ).Returns(CreateMockExampleTimePeriodDataTable());
-            dataLayer.Setup(x => x.InsertRecord(
+                ).Returns(CreateMockExampleTimePeriodDataTable(expectedExampleTimePeriod));
+            //update
+            dataLayer.Setup(x => x.UpdateRecord(
+                It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.TimePeriod),
+                It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfTimePeriodUpdateValues &&
+                     (string)y[DataObjects.TimePeriods.Columns.Name] == expectedUpdatedTimePeriod.Name &&
+                     (DateTime)y[DataObjects.TimePeriods.Columns.LastOccurance] == expectedUpdatedTimePeriod.LastOccurance &&
+                     (PeriodMethod)y[DataObjects.TimePeriods.Columns.PeriodMethod] == expectedUpdatedTimePeriod.PeriodMethod &&
+                     (PeriodType)y[DataObjects.TimePeriods.Columns.PeriodType] == expectedUpdatedTimePeriod.PeriodType &&
+                     (int)y[DataObjects.TimePeriods.Columns.PeriodValue] == expectedUpdatedTimePeriod.PeriodValue &&
+                     (int)y[DataObjects.TimePeriods.Columns.OwnerAccountId] == expectedUpdatedTimePeriod.OwnerAccountId),
+                It.Is<int>(y => y == expectedUpdatedTimePeriod.Id))
+                ).Returns(CreateMockExampleTimePeriodDataTable(expectedUpdatedTimePeriod));
+            dataLayer.Setup(x => x.GetRecords(
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.AccountToTimePeriodLink),
-                It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfAccountToTimePeriodLinkInsertValues &&
-                     (int)y[DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId] == expectedExampleTimePeriod.Id &&
-                     (int)y[DataObjects.AccountToTimePeriodLink.Columns.AccountId] == expectedExampleTimePeriod.LinkedAccountList[0]))
-                ).Returns(CreateMockExampleAccountToTimePeriodDataTable(expectedExampleTimePeriod.Id, expectedExampleTimePeriod.LinkedAccountList[0]));
-            dataLayer.Setup(x => x.InsertRecord(
-                It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.AccountToTimePeriodLink),
-                It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfAccountToTimePeriodLinkInsertValues &&
-                     (int)y[DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId] == expectedExampleTimePeriod.Id &&
-                     (int)y[DataObjects.AccountToTimePeriodLink.Columns.AccountId] == expectedExampleTimePeriod.LinkedAccountList[1]))
-                ).Returns(CreateMockExampleAccountToTimePeriodDataTable(expectedExampleTimePeriod.Id, expectedExampleTimePeriod.LinkedAccountList[1]));
+                It.Is<Dictionary<string, object>>(y => (int)y[DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId] == expectedUpdatedTimePeriod.Id))
+                ).Returns(CreateMockExampleAccountToTimePeriodDataTable(expectedUpdatedTimePeriod.Id, expectedUpdatedTimePeriod.LinkedAccountList));
             return dataLayer;
         }
-        private DataTable CreateMockExampleTimePeriodDataTable()
+        private DataTable CreateMockExampleTimePeriodDataTable(TimePeriod baseTimePeriod)
         {
             DataTable exampleTimePeriodTable = CreateMockTimePeriodDataTable();
             DataRow newRow = exampleTimePeriodTable.NewRow();
-            newRow[DataObjects.TimePeriods.Columns.Id] = expectedExampleTimePeriod.Id;
-            newRow[DataObjects.TimePeriods.Columns.Name] = expectedExampleTimePeriod.Name;
-            newRow[DataObjects.TimePeriods.Columns.LastOccurance] = expectedExampleTimePeriod.LastOccurance;
-            newRow[DataObjects.TimePeriods.Columns.PeriodMethod] = expectedExampleTimePeriod.PeriodMethod;
-            newRow[DataObjects.TimePeriods.Columns.PeriodType] = expectedExampleTimePeriod.PeriodType;
-            newRow[DataObjects.TimePeriods.Columns.PeriodValue] = expectedExampleTimePeriod.PeriodValue;
-            newRow[DataObjects.TimePeriods.Columns.OwnerAccountId] = expectedExampleTimePeriod.OwnerAccountId;
+            newRow[DataObjects.TimePeriods.Columns.Id] = baseTimePeriod.Id;
+            newRow[DataObjects.TimePeriods.Columns.Name] = baseTimePeriod.Name;
+            newRow[DataObjects.TimePeriods.Columns.LastOccurance] = baseTimePeriod.LastOccurance;
+            newRow[DataObjects.TimePeriods.Columns.PeriodMethod] = baseTimePeriod.PeriodMethod;
+            newRow[DataObjects.TimePeriods.Columns.PeriodType] = baseTimePeriod.PeriodType;
+            newRow[DataObjects.TimePeriods.Columns.PeriodValue] = baseTimePeriod.PeriodValue;
+            newRow[DataObjects.TimePeriods.Columns.OwnerAccountId] = baseTimePeriod.OwnerAccountId;
             exampleTimePeriodTable.Rows.Add(newRow);
             return exampleTimePeriodTable;
         }
@@ -249,27 +293,16 @@ namespace PloutosMain.Tests.Repositories
             timePeriodTable.Columns.Add(newColumn);
             return timePeriodTable;
         }
-        private DataTable CreateMockExampleAccountToTimePeriodDataTable()
+        private DataTable CreateMockExampleAccountToTimePeriodDataTable(int timePeriodId, List<int> accountIdList)
         {
             DataTable accountToTimePeriodLinkTable = CreateMockAccountToTimePeriodDataTable();
-            DataRow newRow = accountToTimePeriodLinkTable.NewRow();
-            newRow[DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId] = expectedExampleTimePeriod.Id;
-            newRow[DataObjects.AccountToTimePeriodLink.Columns.AccountId] = expectedExampleTimePeriod.LinkedAccountList[0];
-            accountToTimePeriodLinkTable.Rows.Add(newRow);
-            newRow = accountToTimePeriodLinkTable.NewRow();
-            newRow[DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId] = expectedExampleTimePeriod.Id;
-            newRow[DataObjects.AccountToTimePeriodLink.Columns.AccountId] = expectedExampleTimePeriod.LinkedAccountList[1];
-            accountToTimePeriodLinkTable.Rows.Add(newRow);
-            return accountToTimePeriodLinkTable;
-        }
-        private DataTable CreateMockExampleAccountToTimePeriodDataTable(int timePeriodId, int AccountId)
-        {
-            DataTable accountToTimePeriodLinkTable = CreateMockAccountToTimePeriodDataTable();
-            DataRow newRow = accountToTimePeriodLinkTable.NewRow();
-            newRow[DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId] = timePeriodId;
-            newRow[DataObjects.AccountToTimePeriodLink.Columns.AccountId] = AccountId;
-            accountToTimePeriodLinkTable.Rows.Add(newRow);
-            newRow = accountToTimePeriodLinkTable.NewRow();
+            foreach (int accountId in accountIdList)
+            {
+                DataRow newRow = accountToTimePeriodLinkTable.NewRow();
+                newRow[DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId] = timePeriodId;
+                newRow[DataObjects.AccountToTimePeriodLink.Columns.AccountId] = accountId;
+                accountToTimePeriodLinkTable.Rows.Add(newRow);
+            }
             return accountToTimePeriodLinkTable;
         }
         private DataTable CreateMockAccountToTimePeriodDataTable()
@@ -302,6 +335,21 @@ namespace PloutosMain.Tests.Repositories
             newTimePeriod.OwnerAccountId = 100;
             newTimePeriod.LinkedAccountList.Add(2);
             newTimePeriod.LinkedAccountList.Add(3);
+            return newTimePeriod;
+        }
+        private TimePeriod CreateUpdatedExampleTimePeriod()
+        {
+            TimePeriod newTimePeriod = new TimePeriod();
+            newTimePeriod.Id = 19;
+            newTimePeriod.Name = "Car Payment";
+            newTimePeriod.LastOccurance = DateTime.Parse("1/17/2018");
+            newTimePeriod.PeriodMethod = PeriodMethod.SameXofUnit;
+            newTimePeriod.PeriodType = PeriodType.Month;
+            newTimePeriod.PeriodValue = 1;
+            newTimePeriod.OwnerAccountId = 103;
+            newTimePeriod.LinkedAccountList.Add(203);
+            newTimePeriod.LinkedAccountList.Add(303);
+            newTimePeriod.LinkedAccountList.Add(403);
             return newTimePeriod;
         }
         #endregion

@@ -1,6 +1,7 @@
 ﻿using PloutosMain.DataLayer;
 using PloutosMain.Exceptions;
 using PloutosMain.Models;
+using System.Collections.Generic;
 using System.Data;
 
 namespace PloutosMain.Repositories
@@ -9,6 +10,7 @@ namespace PloutosMain.Repositories
     {
         #region private objects
         private IDataLayer _dataLayer;
+        private ITimePeriodRepo _timePeriodRepo;
         private Account _account;
         #endregion
 
@@ -16,6 +18,12 @@ namespace PloutosMain.Repositories
         public AssetAccountRepo(IDataLayer dataLayer)
         {
             _dataLayer = dataLayer;
+            _timePeriodRepo = new TimePeriodRepo(_dataLayer);
+        }
+        public AssetAccountRepo(IDataLayer dataLayer, ITimePeriodRepo timePeriodRepo)
+        {
+            _dataLayer = dataLayer;
+            _timePeriodRepo = timePeriodRepo;
         }
         #endregion
 
@@ -31,35 +39,42 @@ namespace PloutosMain.Repositories
             switch (assetAccount.AssetAccountType)
             {
                 case AssetAccountType.Cash:
-                    MapCashAccount(assetAccount, accountData.Rows[0]);
+                    assetAccount = new CashAssetAccount(assetAccount);
                     break;
                 case AssetAccountType.Credit:
-                    MapCreditAccount(assetAccount, accountData.Rows[0]);
+                    assetAccount = MapCreditAccount(assetAccount, accountData.Rows[0]);
                     break;
                 case AssetAccountType.Savings:
-                    MapSavingsAccount(assetAccount, accountData.Rows[0]);
+                    assetAccount = MapSavingsAccount(assetAccount, accountData.Rows[0]);
                     break;
             }
-
             accountData.Dispose();
-            return _account;
+
+            return assetAccount;
         }
         public Account InsertAccount(Account newAccount)
         {
-            return _account;
+            return null;
         }
         public Account UpdateAccount(Account modifiedAccount)
         {
-            return _account;
+            return null;
         }
         public void DeleteAccount(int accountId)
         {
+            //remove associated time period if found
             _dataLayer.DeleteRecord(DataObjects.DbTarget.Account, accountId);
         }
         #endregion
 
-        #region private control methods
-
+        #region private shared methods
+        private TimePeriod GetOwnedTimePeriod(AssetAccount assetAccount)
+        {
+            DataTable timePeriodData = _dataLayer.GetRecords(DataObjects.DbTarget.TimePeriod, MapTimePeriodOwnerToDictionary(assetAccount));
+            if (timePeriodData == null || timePeriodData.Rows.Count == 0)
+                return null;
+            return _timePeriodRepo.GetTimePeriod(int.Parse(timePeriodData.Rows[0][DataObjects.TimePeriods.Columns.Id].ToString()));
+        }
         #endregion
 
         #region private data mapping methods
@@ -71,28 +86,35 @@ namespace PloutosMain.Repositories
             assetAccount.AccountType = (AccountType)int.Parse(accountData[DataObjects.Accounts.Columns.AccountType].ToString());
             assetAccount.AssetAccountType = (AssetAccountType)int.Parse(accountData[DataObjects.Accounts.Columns.AssetAccountType].ToString());
             assetAccount.Balance = decimal.Parse(accountData[DataObjects.Accounts.Columns.Balance].ToString());
+
             return assetAccount;
         }
-        private void MapCashAccount(AssetAccount assetAccount, DataRow accountData)
-        {
-            CashAssetAccount cashAccount = new CashAssetAccount(assetAccount);
-            _account = cashAccount;
-        }
-        private void MapCreditAccount(AssetAccount assetAccount, DataRow accountData)
+        private CreditAssetAccount MapCreditAccount(AssetAccount assetAccount, DataRow accountData)
         {
             CreditAssetAccount creditAccount = new CreditAssetAccount(assetAccount);
             creditAccount.CreditLine = decimal.Parse(accountData[DataObjects.Accounts.Columns.CreditLine].ToString());
             creditAccount.InterestRate = decimal.Parse(accountData[DataObjects.Accounts.Columns.InterestRate].ToString());
-            //TODO: Update when TimePeriod is implemented
-            _account = creditAccount;
+            TimePeriod ownedTimePeriod = GetOwnedTimePeriod(creditAccount);
+            if (ownedTimePeriod != null)
+                creditAccount.StatementTimePeriod = ownedTimePeriod;
+            //TODO: Update when ExpenseAccount is implemented
+            return creditAccount;
         }
-        private void MapSavingsAccount(AssetAccount assetAccount, DataRow accountData)
+        private SavingsAssetAccount MapSavingsAccount(AssetAccount assetAccount, DataRow accountData)
         {
             SavingsAssetAccount savingsAccount = new SavingsAssetAccount(assetAccount);
             savingsAccount.InterestRate = decimal.Parse(accountData[DataObjects.Accounts.Columns.InterestRate].ToString());
-            //TODO: Update when TimePeriod is implemented
-            _account = savingsAccount;
+            TimePeriod ownedTimePeriod = GetOwnedTimePeriod(savingsAccount);
+            if (ownedTimePeriod != null)
+                savingsAccount.StatementTimePeriod = ownedTimePeriod;
+            return savingsAccount;
 
+        }
+        private Dictionary<string, object> MapTimePeriodOwnerToDictionary(AssetAccount assetAccount)
+        {
+            Dictionary<string, object> criteriaList = new Dictionary<string, object>();
+            criteriaList.Add(DataObjects.TimePeriods.Columns.OwnerAccountId, assetAccount.Id);
+            return criteriaList;
         }
         #endregion
     }

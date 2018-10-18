@@ -29,16 +29,10 @@ namespace PloutosMain.Repositories
                 throw new TimePeriodNotFoundException(timePeriodId);
 
             TimePeriod timePeriod = MapBasicTimePeriod(timePeriodData.Rows[0]);
-
-            Dictionary<string, object> criteriaList = new Dictionary<string, object>();
-            criteriaList.Add(DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId, timePeriodId);
-            DataTable linkedAccountData = _dataLayer.GetRecords(DataObjects.DbTarget.AccountToTimePeriodLink, criteriaList);
-
-            MapLinkedAccounts(ref timePeriod, linkedAccountData);
-
             timePeriodData.Dispose();
-            linkedAccountData.Dispose();
 
+            AddLinkedAccountList(ref timePeriod);
+            
             return timePeriod;
         }
         public TimePeriod InsertTimePeriod(TimePeriod unsavedTimePeriod)
@@ -51,17 +45,25 @@ namespace PloutosMain.Repositories
 
             TimePeriod savedTimePeriod = MapBasicTimePeriod(timePeriodData.Rows[0]);
 
-            PersistAccountToTimePeriodLinks(ref savedTimePeriod, ref unsavedTimePeriod);
-
             timePeriodData.Dispose();
             
             return savedTimePeriod;
         }
         public TimePeriod UpdateTimePeriod(TimePeriod modifiedTimePeriod)
         {
-            return null;
-        }
+            Dictionary<string, object> valueList = MapTimePeriodToDictionary(modifiedTimePeriod);
+            DataTable timePeriodData = _dataLayer.UpdateRecord(DataObjects.DbTarget.TimePeriod, valueList, modifiedTimePeriod.Id);
 
+            if (timePeriodData == null || timePeriodData.Rows.Count < 1)
+                throw new TimePeriodNotFoundException(modifiedTimePeriod.Id);
+
+            TimePeriod savedTimePeriod = MapBasicTimePeriod(timePeriodData.Rows[0]);
+            timePeriodData.Dispose();
+
+            AddLinkedAccountList(ref savedTimePeriod);
+
+            return savedTimePeriod;
+        }
         public void DeleteTimePeriod(int timePeriodId)
         {
             Dictionary<string, object> criteriaList = new Dictionary<string, object>();
@@ -73,29 +75,14 @@ namespace PloutosMain.Repositories
         #endregion
 
         #region private shared methods
-        private void PersistAccountToTimePeriodLinks(ref TimePeriod savedTimePeriod, ref TimePeriod unsavedTimePeriod)
+        private void AddLinkedAccountList(ref TimePeriod timePeriod)
         {
-            List<int> addedAccountList = unsavedTimePeriod.GetNewlyAddedAccounts();
-            Dictionary<string, object> valueList = new Dictionary<string, object>();
-            valueList.Add(DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId, savedTimePeriod.Id);
-            valueList.Add(DataObjects.AccountToTimePeriodLink.Columns.AccountId, 0);
-            DataTable linkedAccountData = new DataTable();
-            foreach (int entry in addedAccountList)
-            {
-                valueList[DataObjects.AccountToTimePeriodLink.Columns.AccountId] = entry;
-                if (linkedAccountData == null || linkedAccountData.Rows.Count == 0)
-                    linkedAccountData = _dataLayer.InsertRecord(DataObjects.DbTarget.AccountToTimePeriodLink, valueList);
-                else
-                {
-                    DataTable dt = _dataLayer.InsertRecord(DataObjects.DbTarget.AccountToTimePeriodLink, valueList);
-                    DataRow newRow = linkedAccountData.NewRow();
-                    newRow[DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId] = dt.Rows[0][DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId];
-                    newRow[DataObjects.AccountToTimePeriodLink.Columns.AccountId] = dt.Rows[0][DataObjects.AccountToTimePeriodLink.Columns.AccountId];
-                    linkedAccountData.Rows.Add(newRow);
-                }
-            }
+            Dictionary<string, object> criteriaList = new Dictionary<string, object>();
+            criteriaList.Add(DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId, timePeriod.Id);
+            DataTable linkedAccountData = _dataLayer.GetRecords(DataObjects.DbTarget.AccountToTimePeriodLink, criteriaList);
+
+            MapLinkedAccounts(ref timePeriod, linkedAccountData);
             linkedAccountData.Dispose();
-            MapLinkedAccounts(ref savedTimePeriod, linkedAccountData);
         }
         #endregion
 
@@ -114,14 +101,12 @@ namespace PloutosMain.Repositories
         }
         private void MapLinkedAccounts(ref TimePeriod timePeriod, DataTable linkedAccountTable)
         {
-            List<int> accountList = new List<int>();
             foreach (DataRow row in linkedAccountTable.Rows)
             {
                 int accountId = int.Parse(row[DataObjects.AccountToTimePeriodLink.Columns.AccountId].ToString());
                 if (accountId != timePeriod.OwnerAccountId)
-                    accountList.Add(accountId);
+                    timePeriod.LinkedAccountList.Add(accountId);
             }
-            timePeriod.EstablishInitialLinkedAccountList(accountList);
         }
         private Dictionary<string, object> MapTimePeriodToDictionary(TimePeriod newTimePeriod)
         {
