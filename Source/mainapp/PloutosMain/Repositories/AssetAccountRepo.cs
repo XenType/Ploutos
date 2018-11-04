@@ -108,9 +108,6 @@ namespace PloutosMain.Repositories
         {
             AssetAccount oldAssetAccount = (AssetAccount)oldAccount;
 
-            if (oldAssetAccount.AssetAccountType != AssetAccountType.Cash)
-                _dataLayer.DeleteRecords(DataObjects.DbTarget.AccountToTimePeriodLink, MapAccountIdToDictionary(oldAssetAccount.Id));
-
             if (oldAssetAccount.AssetAccountType == AssetAccountType.Credit)
             {
                 CreditAssetAccount creditAssetAccount = (CreditAssetAccount)oldAssetAccount;

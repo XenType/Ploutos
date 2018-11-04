@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Moq;
 using PloutosMain.DataLayer;
 using PloutosMain.Exceptions;
@@ -10,7 +10,7 @@ using PloutosMain.Repositories;
 
 namespace PloutosMain.Tests.Repositories
 {
-    [TestClass]
+    [TestFixture]
     public class TImePeriodRepoTests
     {
         #region Test Mock Objects
@@ -27,7 +27,7 @@ namespace PloutosMain.Tests.Repositories
         #endregion
 
         #region Setup
-        [TestInitialize]
+        [SetUp]
         public void Initialize()
         {
             expectedNotFoundTimePeriod = CreateExpectedNotFoundTimePeriod();
@@ -38,7 +38,7 @@ namespace PloutosMain.Tests.Repositories
         #endregion
 
         #region Exception Tests  
-        [TestMethod]
+        [Test]
         public void WhenTimePeriodDoesNotExist_CorrectExceptionIsThrown()
         {
             Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
@@ -58,7 +58,7 @@ namespace PloutosMain.Tests.Repositories
 
         #region Time Period Retrieval Tests
         // DataLayer command usage
-        [TestMethod]
+        [Test]
         public void WhenGettingTimePeriod_CorrectDbCallsAreMade()
         {
             Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
@@ -76,7 +76,7 @@ namespace PloutosMain.Tests.Repositories
                 Times.Once);
         }
         // DataTable Mapping
-        [TestMethod]
+        [Test]
         public void WhenGettingTimePeriodBasicData_CorrectPropertiesAreMapped()
         {
             Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
@@ -91,7 +91,7 @@ namespace PloutosMain.Tests.Repositories
             Assert.AreEqual(expectedExampleTimePeriod.PeriodValue, actualTimePeriod.PeriodValue);
             Assert.AreEqual(expectedExampleTimePeriod.OwnerAccountId, actualTimePeriod.OwnerAccountId);
         }
-        [TestMethod]
+        [Test]
         public void WhenGettingTimePeriodBasicData_CorrectLinkedAccountsAreMapped()
         {
             Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
@@ -106,7 +106,7 @@ namespace PloutosMain.Tests.Repositories
         #endregion
 
         #region Time Period Creation Tests
-        [TestMethod]
+        [Test]
         public void WhenInsertingTimePeriodData_CorrectTimePeriodDbCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
@@ -126,7 +126,7 @@ namespace PloutosMain.Tests.Repositories
                 Times.Once);
         }
 
-        [TestMethod]
+        [Test]
         public void WhenInsertingTimePeriodData_CorrectTimePeriodObjectIsReturned()
         {
             Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
@@ -140,7 +140,7 @@ namespace PloutosMain.Tests.Repositories
         #endregion
 
         #region Time Period Editing Tests
-        [TestMethod]
+        [Test]
         public void WhenUpdatingTimePeriodData_CorrectTimePeriodDbCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
@@ -166,7 +166,7 @@ namespace PloutosMain.Tests.Repositories
                It.Is<Dictionary<string, object>>(y => (int)y[DataObjects.AccountToTimePeriodLink.Columns.TimePeriodId] == expectedUpdatedTimePeriod.Id)),
                Times.Once);
         }
-        [TestMethod]
+        [Test]
         public void WhenUpdatingTimePeriodData_CorrectPropertiesAreMapped()
         {
             Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
@@ -182,7 +182,7 @@ namespace PloutosMain.Tests.Repositories
             Assert.AreEqual(expectedUpdatedTimePeriod.PeriodValue, actualTimePeriod.PeriodValue);
             Assert.AreEqual(expectedUpdatedTimePeriod.OwnerAccountId, actualTimePeriod.OwnerAccountId);
         }
-        [TestMethod]
+        [Test]
         public void WhenUpdatingTimePeriodData_CorrectLinkedAccountsAreMapped()
         {
             Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();
@@ -198,7 +198,7 @@ namespace PloutosMain.Tests.Repositories
         #endregion
 
         #region Time Period Removal Tests
-        [TestMethod]
+        [Test]
         public void WhenDeletingTimePeriod_CorrectDbCallsAreMade()
         {
             Mock<IDataLayer> mockDataLayer = MockTimePeriodRequests();

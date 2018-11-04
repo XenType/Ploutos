@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Moq;
 using PloutosMain.DataLayer;
 using PloutosMain.Exceptions;
@@ -10,7 +10,7 @@ using PloutosMain.Repositories;
 
 namespace PloutosMain.Tests.Repositories
 {
-    [TestClass]
+    [TestFixture]
     public class AssetAccountRepoTests
     {
         #region Test Mock Objects
@@ -39,7 +39,7 @@ namespace PloutosMain.Tests.Repositories
         #endregion
 
         #region Setup
-        [TestInitialize]
+        [SetUp]
         public void Initialize()
         {
             expectedNotFoundAssetAccount = CreateExpectedNotFoundAssetAccount();
@@ -57,7 +57,7 @@ namespace PloutosMain.Tests.Repositories
         #endregion
 
         #region Exception Tests        
-        [TestMethod]
+        [Test]
         public void WhenAccountDoesNotExist_CorrectExceptionIsThrown()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -77,7 +77,7 @@ namespace PloutosMain.Tests.Repositories
 
         #region Asset Account Retrieval Tests
         // DataLayer Command Usage
-        [TestMethod]
+        [Test]
         public void WhenGettingCashAssetAccount_CorrectDbCallsAreMade()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -90,7 +90,7 @@ namespace PloutosMain.Tests.Repositories
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
                 It.Is<int>(y => y == expectedCashAssetAccount.Id)), Times.Once);
         }
-        [TestMethod]
+        [Test]
         public void WhenGettingCreditAssetAccount_CorrectDbCallsAreMade()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -110,7 +110,7 @@ namespace PloutosMain.Tests.Repositories
                 Times.Once);
         }
 
-        [TestMethod]
+        [Test]
         public void WhenGettingSavingsAssetAccount_CorrectDbCallsAreMade()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -131,7 +131,7 @@ namespace PloutosMain.Tests.Repositories
         }
 
         // TimePeriodRepo Command Usage
-        [TestMethod]
+        [Test]
         public void WhenGettingCreditAssetAccount_CorrectTimePeriodRepoCallsAreMade()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -143,7 +143,7 @@ namespace PloutosMain.Tests.Repositories
             mockTimePeriodRepo.Verify(x => x.GetTimePeriod(
                 It.Is<int>(y => y == expectedOwnedCreditTimePeriod.Id)), Times.Once);
         }
-        [TestMethod]
+        [Test]
         public void WhenGettingSavingsAssetAccount_CorrectTimePeriodRepoCallsAreMade()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -157,7 +157,7 @@ namespace PloutosMain.Tests.Repositories
         }
 
         // DataTable Mapping
-        [TestMethod]
+        [Test]
         public void WhenGettingCashAssetAccount_CorrectPropertiesAreMapped()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -171,7 +171,7 @@ namespace PloutosMain.Tests.Repositories
             Assert.AreEqual(expectedCashAssetAccount.AssetAccountType, actualAccount.AssetAccountType);
             Assert.AreEqual(expectedCashAssetAccount.Balance, actualAccount.Balance);
         }
-        [TestMethod]
+        [Test]
         public void WhenGettingCreditAssetAccount_CorrectPropertiesAreMapped()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -188,7 +188,7 @@ namespace PloutosMain.Tests.Repositories
             Assert.AreEqual(expectedCreditAssetAccount.InterestRate, actualAccount.InterestRate);
             Assert.AreEqual(expectedCreditAssetAccount.StatementTimePeriod.Id, actualAccount.StatementTimePeriod.Id);
         }
-        [TestMethod]
+        [Test]
         public void WhenGettingSavingsAssetAccount_CorrectPropertiesAreMapped()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -207,7 +207,7 @@ namespace PloutosMain.Tests.Repositories
         #endregion
 
         #region Asset Account Creation Tests
-        [TestMethod]
+        [Test]
         public void WhenInsertingCashAssetAccountData_CorrectAccountDbCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -224,7 +224,7 @@ namespace PloutosMain.Tests.Repositories
                 (AssetAccountType)y[DataObjects.Accounts.Columns.AssetAccountType] == expectedCashAssetAccount.AssetAccountType)),
             Times.Once);
         }
-        [TestMethod]
+        [Test]
         public void WhenInsertingCashAssetAccountData_CorrectCashAssetAccountObjectIsReturned()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -234,7 +234,7 @@ namespace PloutosMain.Tests.Repositories
 
             Assert.AreEqual(expectedCashAssetAccount.Id, actualCashAssetAccount.Id);
         }
-        [TestMethod]
+        [Test]
         public void WhenInsertingCreditAssetAccountData_CorrectAccountDbCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -253,7 +253,7 @@ namespace PloutosMain.Tests.Repositories
                 (decimal)y[DataObjects.Accounts.Columns.InterestRate] == expectedCreditAssetAccount.InterestRate)),
             Times.Once);
         }
-        [TestMethod]
+        [Test]
         public void WhenInsertingCreditAssetAccountData_CorrectCreditAssetAccountObjectIsReturned()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -268,7 +268,7 @@ namespace PloutosMain.Tests.Repositories
             Assert.AreEqual(expectedCreditAssetAccount.Id, actualCreditAssetAccount.Id);
             Assert.AreEqual(expectedCreditAssetAccount.StatementTimePeriod.OwnerAccountId, actualCreditAssetAccount.StatementTimePeriod.OwnerAccountId);
         }
-        [TestMethod]
+        [Test]
         public void WhenInsertingCreditAssetAccountData_CorrectTimePeriodRepoCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -290,7 +290,7 @@ namespace PloutosMain.Tests.Repositories
                     y.OwnerAccountId == expectedCreditAssetAccount.Id)),
                 Times.Once);
         }
-        [TestMethod]
+        [Test]
         public void WhenInsertingSavingsAssetAccountData_CorrectAccountDbCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -308,7 +308,7 @@ namespace PloutosMain.Tests.Repositories
                 (decimal)y[DataObjects.Accounts.Columns.InterestRate] == expectedSavingsAssetAccount.InterestRate)),
             Times.Once);
         }
-        [TestMethod]
+        [Test]
         public void WhenInsertingSavingsAssetAccountData_CorrectSavingsAssetAccountObjectIsReturned()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -323,7 +323,7 @@ namespace PloutosMain.Tests.Repositories
             Assert.AreEqual(expectedSavingsAssetAccount.Id, actualSavingsAssetAccount.Id);
             Assert.AreEqual(expectedSavingsAssetAccount.StatementTimePeriod.OwnerAccountId, actualSavingsAssetAccount.StatementTimePeriod.OwnerAccountId);
         }
-        [TestMethod]
+        [Test]
         public void WhenInsertingSavingsAssetAccountData_CorrectTimePeriodRepoCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -348,7 +348,7 @@ namespace PloutosMain.Tests.Repositories
         #endregion
 
         #region Asset Account Editing Tests
-        [TestMethod]
+        [Test]
         public void WhenUpdatingCashAssetAccountData_CorrectAccountDbCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -364,7 +364,7 @@ namespace PloutosMain.Tests.Repositories
                 It.Is<int>(y => y == expectedCashAssetAccount.Id)),
                 Times.Once);
         }
-        [TestMethod]
+        [Test]
         public void WhenUpdatingCashAssetAccountData_CorrectCashAssetAccountObjectIsReturnedBasedOnId()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -374,7 +374,7 @@ namespace PloutosMain.Tests.Repositories
 
             Assert.AreEqual(expectedCashAssetAccount.Id, actualCashAssetAccount.Id);
         }
-        [TestMethod]
+        [Test]
         public void WhenUpdatingCreditAssetAccountData_CorrectAccountDbCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -392,7 +392,7 @@ namespace PloutosMain.Tests.Repositories
                 It.Is<int>(y => y == expectedCreditAssetAccount.Id)),
                 Times.Once);
         }
-        [TestMethod]
+        [Test]
         public void WhenUpdatingCreditAssetAccountData_CorrectCreditAssetAccountObjectIsReturnedBasedOnId()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -402,7 +402,7 @@ namespace PloutosMain.Tests.Repositories
 
             Assert.AreEqual(expectedCreditAssetAccount.Id, actualCreditAssetAccount.Id);
         }
-        [TestMethod]
+        [Test]
         public void WhenUpdatingSavingsAssetAccountData_CorrectAccountDbCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -419,7 +419,7 @@ namespace PloutosMain.Tests.Repositories
                 It.Is<int>(y => y == expectedSavingsAssetAccount.Id)),
                 Times.Once);
         }
-        [TestMethod]
+        [Test]
         public void WhenUpdatingSavingsAssetAccountData_CorrectCreditAssetAccountObjectIsReturnedBasedOnId()
         {
             Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
@@ -433,7 +433,7 @@ namespace PloutosMain.Tests.Repositories
         #endregion
 
         #region Asset Account Removal Tests
-        [TestMethod]
+        [Test]
         public void WhenDeletingAssetAccount_CorrectAccountDbCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = new Mock<IDataLayer>();
@@ -445,21 +445,7 @@ namespace PloutosMain.Tests.Repositories
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
                 It.Is<int>(y => y == expectedDeleteAssetAccount.Id)), Times.Once);
         }
-        [TestMethod]
-        public void WhenDeletingAssetAccount_CorrectAccountToTimePeriodLinkDbCallIsMade()
-        {
-            Mock<IDataLayer> mockDataLayer = new Mock<IDataLayer>();
-            Mock<ITimePeriodRepo> mockTimePeriodRepo = new Mock<ITimePeriodRepo>();
-            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object, mockTimePeriodRepo.Object);
-            accountRepo.DeleteAccount(expectedDeleteCreditAssetAccount);
-
-            mockDataLayer.Verify(x => x.DeleteRecords(
-                It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.AccountToTimePeriodLink),
-                It.Is<Dictionary<string, object>>(y => 
-                    (int)y[DataObjects.AccountToTimePeriodLink.Columns.AccountId] == expectedDeleteCreditAssetAccount.Id)), 
-                Times.Once);
-        }
-        [TestMethod]
+        [Test]
         public void WhenDeletingCreditAssetAccountWithStatementTimePeriod_CorrectTimePeriodRepoCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = new Mock<IDataLayer>();
@@ -471,7 +457,7 @@ namespace PloutosMain.Tests.Repositories
                 It.Is<int>(y => y == expectedDeleteCreditAssetAccount.StatementTimePeriod.Id)),
                 Times.Once);
         }
-        [TestMethod]
+        [Test]
         public void WhenDeletingSavingsAssetAccountWithStatementTimePeriod_CorrectTimePeriodRepoCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = new Mock<IDataLayer>();
@@ -483,7 +469,7 @@ namespace PloutosMain.Tests.Repositories
                 It.Is<int>(y => y == expectedDeleteSavingsAssetAccount.StatementTimePeriod.Id)),
                 Times.Once);
         }
-        [TestMethod]
+        [Test]
         public void WhenDeletingCreditOrSavingsAssetAccountWithNoStatementTimePeriod_NoTimePeriodRepoCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = new Mock<IDataLayer>();
