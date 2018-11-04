@@ -8,13 +8,13 @@ namespace PloutosMain.Models
 
         public AssetAccount()
         {
-
+            AccountType = AccountType.Asset;
         }
         public AssetAccount(Account account)
         {
             Id = account.Id;
             Name = account.Name;
-            AccountType = account.AccountType;
+            AccountType = AccountType.Asset;
         }
     }
     public enum AssetAccountType { Cash, Credit, Savings }

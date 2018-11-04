@@ -5,7 +5,7 @@ namespace PloutosMain.Models
     {
         public CashAssetAccount()
         {
-
+            AssetAccountType = AssetAccountType.Cash;
         }
         public CashAssetAccount(AssetAccount assetAccount)
         {
@@ -13,7 +13,7 @@ namespace PloutosMain.Models
             Name = assetAccount.Name;
             AccountType = assetAccount.AccountType;
             Balance = assetAccount.Balance;
-            AssetAccountType = assetAccount.AssetAccountType;
+            AssetAccountType = AssetAccountType.Cash;
         }
     }
 }

@@ -81,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
+    <Content Include="Templates\RepoTemplate.txt" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -106,6 +107,7 @@
     <Compile Include="Repositories\AssetAccountRepo.cs" />
     <Compile Include="Repositories\IAccountRepo.cs" />
     <Compile Include="Repositories\ICategoryRepo.cs" />
+    <Compile Include="Repositories\IncomeAccountRepo.cs" />
     <Compile Include="Repositories\ITimePeriodRepo.cs" />
     <Compile Include="Repositories\TimePeriodRepo.cs" />
   </ItemGroup>

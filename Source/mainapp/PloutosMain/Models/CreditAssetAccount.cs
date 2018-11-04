@@ -9,11 +9,10 @@ namespace PloutosMain.Models
         public decimal CreditUsed => CreditLine - Balance;
         public decimal InterestRate { get; set; }
         public TimePeriod StatementTimePeriod { get; set; }
-        public List<ExpenseAccount> LinkedExpenseAccounts { get; set; }
         
         public CreditAssetAccount()
         {
-
+            AssetAccountType = AssetAccountType.Credit;
         }
         public CreditAssetAccount(AssetAccount assetAccount)
         {
@@ -21,12 +20,11 @@ namespace PloutosMain.Models
             Name = assetAccount.Name;
             AccountType = assetAccount.AccountType;
             Balance = assetAccount.Balance;
-            AssetAccountType = assetAccount.AssetAccountType;
+            AssetAccountType = AssetAccountType.Credit;
         }
         public decimal CalculateFutureBalance(DateTime futureDate)
         {
-            //TODO: Update when TimePeriod is implemented
-            //TODO: Update when ExpenseAccount is implemented
+            //TODO: Update when TimePeriod & ExpenseAccount are both implemented
             return 0.00M;
         }
         
