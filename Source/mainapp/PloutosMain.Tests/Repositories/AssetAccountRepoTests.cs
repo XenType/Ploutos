@@ -20,8 +20,9 @@ namespace PloutosMain.Tests.Repositories
         private TimePeriod expectedOwnedCreditTimePeriod;
         private SavingsAssetAccount expectedSavingsAssetAccount;
         private TimePeriod expectedOwnedSavingsTimePeriod;
-
         private AssetAccount expectedDeleteAssetAccount;
+        private CreditAssetAccount expectedDeleteCreditAssetAccount;
+        private SavingsAssetAccount expectedDeleteSavingsAssetAccount;
 
         private AccountNotFoundException expectedAccountNotFoundException;
         #endregion
@@ -29,8 +30,12 @@ namespace PloutosMain.Tests.Repositories
         #region Test Constants
         private const int expectedNumberOfAccountToTimePeriodLinkGetValues = 1;
         private const int expectedNumberOfCashAssetAccountInsertValues = 4;
+        private const int expectedNumberOfCashAssetAccountUpdateValues = 2;
         private const int expectedNumberOfCreditAssetAccountInsertValues = 6;
+        private const int expectedNumberOfCreditAssetAccountUpdateValues = 4;
         private const int expectedNumberOfSavingsAssetAccountInsertValues = 5;
+        private const int expectedNumberOfSavingsAssetAccountUpdateValues = 3;
+
         #endregion
 
         #region Setup
@@ -43,9 +48,9 @@ namespace PloutosMain.Tests.Repositories
             expectedOwnedCreditTimePeriod = CreateExpectedOwnedCreditTimePeriod();
             expectedSavingsAssetAccount = CreateExpectedSavingsAssetAccount();
             expectedOwnedSavingsTimePeriod = CreateExpectedOwnedSavingsTimePeriod();
-
             expectedDeleteAssetAccount = CreateExpectedDeleteAssetAccount();
-
+            expectedDeleteCreditAssetAccount = CreateExpectedCreditAssetAccount();
+            expectedDeleteSavingsAssetAccount = CreateExpectedSavingsAssetAccount();
             expectedAccountNotFoundException = new AccountNotFoundException(expectedNotFoundAssetAccount.Id, AccountType.Asset);
         }
 
@@ -343,21 +348,158 @@ namespace PloutosMain.Tests.Repositories
         #endregion
 
         #region Asset Account Editing Tests
+        [TestMethod]
+        public void WhenUpdatingCashAssetAccountData_CorrectAccountDbCallIsMade()
+        {
+            Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
+            Mock<ITimePeriodRepo> mockTimePeriodRepo = MockTimePeriodRepoRequests();
+            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object, mockTimePeriodRepo.Object);
+            CashAssetAccount actualCashAssetAccount = (CashAssetAccount)accountRepo.UpdateAccount(expectedCashAssetAccount);
 
+            mockDataLayer.Verify(x => x.UpdateRecord(
+                It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
+                It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfCashAssetAccountUpdateValues &&
+                    (string)y[DataObjects.Accounts.Columns.Name] == expectedCashAssetAccount.Name &&
+                    (decimal)y[DataObjects.Accounts.Columns.Balance] == expectedCashAssetAccount.Balance),
+                It.Is<int>(y => y == expectedCashAssetAccount.Id)),
+                Times.Once);
+        }
+        [TestMethod]
+        public void WhenUpdatingCashAssetAccountData_CorrectCashAssetAccountObjectIsReturnedBasedOnId()
+        {
+            Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
+            Mock<ITimePeriodRepo> mockTimePeriodRepo = MockTimePeriodRepoRequests();
+            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object, mockTimePeriodRepo.Object);
+            CashAssetAccount actualCashAssetAccount = (CashAssetAccount)accountRepo.UpdateAccount(expectedCashAssetAccount);
+
+            Assert.AreEqual(expectedCashAssetAccount.Id, actualCashAssetAccount.Id);
+        }
+        [TestMethod]
+        public void WhenUpdatingCreditAssetAccountData_CorrectAccountDbCallIsMade()
+        {
+            Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
+            Mock<ITimePeriodRepo> mockTimePeriodRepo = MockTimePeriodRepoRequests();
+            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object, mockTimePeriodRepo.Object);
+            CreditAssetAccount actualCreditAssetAccount = (CreditAssetAccount)accountRepo.UpdateAccount(expectedCreditAssetAccount);
+
+            mockDataLayer.Verify(x => x.UpdateRecord(
+                It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
+                It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfCreditAssetAccountUpdateValues &&
+                    (string)y[DataObjects.Accounts.Columns.Name] == expectedCreditAssetAccount.Name &&
+                    (decimal)y[DataObjects.Accounts.Columns.Balance] == expectedCreditAssetAccount.Balance &&
+                    (decimal)y[DataObjects.Accounts.Columns.InterestRate] == expectedCreditAssetAccount.InterestRate &&
+                    (decimal)y[DataObjects.Accounts.Columns.CreditLine] == expectedCreditAssetAccount.CreditLine),
+                It.Is<int>(y => y == expectedCreditAssetAccount.Id)),
+                Times.Once);
+        }
+        [TestMethod]
+        public void WhenUpdatingCreditAssetAccountData_CorrectCreditAssetAccountObjectIsReturnedBasedOnId()
+        {
+            Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
+            Mock<ITimePeriodRepo> mockTimePeriodRepo = MockTimePeriodRepoRequests();
+            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object, mockTimePeriodRepo.Object);
+            CreditAssetAccount actualCreditAssetAccount = (CreditAssetAccount)accountRepo.UpdateAccount(expectedCreditAssetAccount);
+
+            Assert.AreEqual(expectedCreditAssetAccount.Id, actualCreditAssetAccount.Id);
+        }
+        [TestMethod]
+        public void WhenUpdatingSavingsAssetAccountData_CorrectAccountDbCallIsMade()
+        {
+            Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
+            Mock<ITimePeriodRepo> mockTimePeriodRepo = MockTimePeriodRepoRequests();
+            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object, mockTimePeriodRepo.Object);
+            SavingsAssetAccount actualSavingsAssetAccount = (SavingsAssetAccount)accountRepo.UpdateAccount(expectedSavingsAssetAccount);
+
+            mockDataLayer.Verify(x => x.UpdateRecord(
+                It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
+                It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfSavingsAssetAccountUpdateValues &&
+                    (string)y[DataObjects.Accounts.Columns.Name] == expectedSavingsAssetAccount.Name &&
+                    (decimal)y[DataObjects.Accounts.Columns.Balance] == expectedSavingsAssetAccount.Balance &&
+                    (decimal)y[DataObjects.Accounts.Columns.InterestRate] == expectedSavingsAssetAccount.InterestRate),
+                It.Is<int>(y => y == expectedSavingsAssetAccount.Id)),
+                Times.Once);
+        }
+        [TestMethod]
+        public void WhenUpdatingSavingsAssetAccountData_CorrectCreditAssetAccountObjectIsReturnedBasedOnId()
+        {
+            Mock<IDataLayer> mockDataLayer = MockAssetAccountRequests();
+            Mock<ITimePeriodRepo> mockTimePeriodRepo = MockTimePeriodRepoRequests();
+            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object, mockTimePeriodRepo.Object);
+            SavingsAssetAccount actualSavingsAssetAccount = (SavingsAssetAccount)accountRepo.UpdateAccount(expectedSavingsAssetAccount);
+
+            Assert.AreEqual(expectedSavingsAssetAccount.Id, actualSavingsAssetAccount.Id);
+        }
+        
         #endregion
 
         #region Asset Account Removal Tests
         [TestMethod]
-        public void WhenDeletingAssetAccount_CorrectDbCallsAreMade()
+        public void WhenDeletingAssetAccount_CorrectAccountDbCallIsMade()
         {
             Mock<IDataLayer> mockDataLayer = new Mock<IDataLayer>();
-            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object);
-            accountRepo.DeleteAccount(expectedDeleteAssetAccount.Id);
-            /// Expectations
-            /// A call will be made to retrieve the asset account data
+            Mock<ITimePeriodRepo> mockTimePeriodRepo = new Mock<ITimePeriodRepo>();
+            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object, mockTimePeriodRepo.Object);
+            accountRepo.DeleteAccount(expectedDeleteAssetAccount);
+
             mockDataLayer.Verify(x => x.DeleteRecord(
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
                 It.Is<int>(y => y == expectedDeleteAssetAccount.Id)), Times.Once);
+        }
+        [TestMethod]
+        public void WhenDeletingAssetAccount_CorrectAccountToTimePeriodLinkDbCallIsMade()
+        {
+            Mock<IDataLayer> mockDataLayer = new Mock<IDataLayer>();
+            Mock<ITimePeriodRepo> mockTimePeriodRepo = new Mock<ITimePeriodRepo>();
+            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object, mockTimePeriodRepo.Object);
+            accountRepo.DeleteAccount(expectedDeleteCreditAssetAccount);
+
+            mockDataLayer.Verify(x => x.DeleteRecords(
+                It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.AccountToTimePeriodLink),
+                It.Is<Dictionary<string, object>>(y => 
+                    (int)y[DataObjects.AccountToTimePeriodLink.Columns.AccountId] == expectedDeleteCreditAssetAccount.Id)), 
+                Times.Once);
+        }
+        [TestMethod]
+        public void WhenDeletingCreditAssetAccountWithStatementTimePeriod_CorrectTimePeriodRepoCallIsMade()
+        {
+            Mock<IDataLayer> mockDataLayer = new Mock<IDataLayer>();
+            Mock<ITimePeriodRepo> mockTimePeriodRepo = new Mock<ITimePeriodRepo>();
+            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object, mockTimePeriodRepo.Object);
+            accountRepo.DeleteAccount(expectedDeleteCreditAssetAccount);
+
+            mockTimePeriodRepo.Verify(x => x.DeleteTimePeriod(
+                It.Is<int>(y => y == expectedDeleteCreditAssetAccount.StatementTimePeriod.Id)),
+                Times.Once);
+        }
+        [TestMethod]
+        public void WhenDeletingSavingsAssetAccountWithStatementTimePeriod_CorrectTimePeriodRepoCallIsMade()
+        {
+            Mock<IDataLayer> mockDataLayer = new Mock<IDataLayer>();
+            Mock<ITimePeriodRepo> mockTimePeriodRepo = new Mock<ITimePeriodRepo>();
+            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object, mockTimePeriodRepo.Object);
+            accountRepo.DeleteAccount(expectedDeleteSavingsAssetAccount);
+
+            mockTimePeriodRepo.Verify(x => x.DeleteTimePeriod(
+                It.Is<int>(y => y == expectedDeleteSavingsAssetAccount.StatementTimePeriod.Id)),
+                Times.Once);
+        }
+        [TestMethod]
+        public void WhenDeletingCreditOrSavingsAssetAccountWithNoStatementTimePeriod_NoTimePeriodRepoCallIsMade()
+        {
+            Mock<IDataLayer> mockDataLayer = new Mock<IDataLayer>();
+            Mock<ITimePeriodRepo> mockTimePeriodRepo = new Mock<ITimePeriodRepo>();
+            IAccountRepo accountRepo = new AssetAccountRepo(mockDataLayer.Object, mockTimePeriodRepo.Object);
+            CreditAssetAccount oldCreditAccount = CreateExpectedCreditAssetAccount();
+            oldCreditAccount.StatementTimePeriod = null;
+            SavingsAssetAccount oldSavingsAccount = CreateExpectedSavingsAssetAccount();
+            oldSavingsAccount.StatementTimePeriod = null;
+
+            accountRepo.DeleteAccount(oldCreditAccount);
+            accountRepo.DeleteAccount(oldSavingsAccount);
+
+            mockTimePeriodRepo.Verify(x => x.DeleteTimePeriod(
+                It.IsAny<int>()),
+                Times.Never);
         }
         #endregion
 
@@ -365,11 +507,19 @@ namespace PloutosMain.Tests.Repositories
         private Mock<IDataLayer> MockAssetAccountRequests()
         {
             Mock<IDataLayer> dataLayer = new Mock<IDataLayer>();
-            // Cash Asset DataTable
+            AddCashAssetRequestsToDataLayer(ref dataLayer);
+            AddCreditAssetRequestsToDataLayer(ref dataLayer);
+            AddSavingsAssetRequestsToDataLayer(ref dataLayer);            
+            return dataLayer;
+        }
+        private void AddCashAssetRequestsToDataLayer(ref Mock<IDataLayer> dataLayer)
+        {
+            //Get Cash Asset Account
             dataLayer.Setup(x => x.GetRecord(
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
                 It.Is<int>(y => y == expectedCashAssetAccount.Id)))
                 .Returns(CreateMockCashAssetAccountDataTable());
+            //Insert Cash Asset Account
             dataLayer.Setup(x => x.InsertRecord(
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
                 It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfCashAssetAccountInsertValues &&
@@ -378,15 +528,28 @@ namespace PloutosMain.Tests.Repositories
                     (decimal)y[DataObjects.Accounts.Columns.Balance] == expectedCashAssetAccount.Balance &&
                     (AssetAccountType)y[DataObjects.Accounts.Columns.AssetAccountType] == expectedCashAssetAccount.AssetAccountType)))
                 .Returns(CreateMockCashAssetAccountDataTable());
-            // Credit Asset DataTable
+            //Update Cash Asset Account
+            dataLayer.Setup(x => x.UpdateRecord(
+                It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
+                It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfCashAssetAccountUpdateValues &&
+                    (string)y[DataObjects.Accounts.Columns.Name] == expectedCashAssetAccount.Name &&
+                    (decimal)y[DataObjects.Accounts.Columns.Balance] == expectedCashAssetAccount.Balance),
+                It.Is<int>(y => y == expectedCashAssetAccount.Id)))
+                .Returns(CreateMockCashAssetAccountDataTable());
+        }
+        private void AddCreditAssetRequestsToDataLayer(ref Mock<IDataLayer> dataLayer)
+        {
+            //Get Credit Asset Account
             dataLayer.Setup(x => x.GetRecord(
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
                 It.Is<int>(y => y == expectedCreditAssetAccount.Id))).Returns(CreateMockCreditAssetAccountDataTable());
+            //Get Linked Time Period
             dataLayer.Setup(x => x.GetRecords(
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.TimePeriod),
                 It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfAccountToTimePeriodLinkGetValues &&
                     (int)y[DataObjects.TimePeriods.Columns.OwnerAccountId] == expectedCreditAssetAccount.Id)))
                 .Returns(CreateMockExampleTimePeriodDataTable(expectedOwnedCreditTimePeriod));
+            //Insert Credit Asset Account
             dataLayer.Setup(x => x.InsertRecord(
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
                 It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfCreditAssetAccountInsertValues &&
@@ -397,15 +560,30 @@ namespace PloutosMain.Tests.Repositories
                     (decimal)y[DataObjects.Accounts.Columns.CreditLine] == expectedCreditAssetAccount.CreditLine &&
                     (decimal)y[DataObjects.Accounts.Columns.InterestRate] == expectedCreditAssetAccount.InterestRate)))
                 .Returns(CreateMockCreditAssetAccountDataTable());
-            // Savings Asset DataTable
+            //Update Credit Asset Account
+            dataLayer.Setup(x => x.UpdateRecord(
+                It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
+                It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfCreditAssetAccountUpdateValues &&
+                    (string)y[DataObjects.Accounts.Columns.Name] == expectedCreditAssetAccount.Name &&
+                    (decimal)y[DataObjects.Accounts.Columns.Balance] == expectedCreditAssetAccount.Balance &&
+                    (decimal)y[DataObjects.Accounts.Columns.InterestRate] == expectedCreditAssetAccount.InterestRate &&
+                    (decimal)y[DataObjects.Accounts.Columns.CreditLine] == expectedCreditAssetAccount.CreditLine),
+                It.Is<int>(y => y == expectedCreditAssetAccount.Id)))
+                .Returns(CreateMockCreditAssetAccountDataTable());
+        }
+        private void AddSavingsAssetRequestsToDataLayer(ref Mock<IDataLayer> dataLayer)
+        {
+            //Get Savings Asset Account
             dataLayer.Setup(x => x.GetRecord(
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
                 It.Is<int>(y => y == expectedSavingsAssetAccount.Id))).Returns(CreateMockSavingsAssetAccountDataTable());
+            //Get Linked Time Period
             dataLayer.Setup(x => x.GetRecords(
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.TimePeriod),
                 It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfAccountToTimePeriodLinkGetValues &&
                     (int)y[DataObjects.TimePeriods.Columns.OwnerAccountId] == expectedSavingsAssetAccount.Id)))
                 .Returns(CreateMockExampleTimePeriodDataTable(expectedOwnedSavingsTimePeriod));
+            //Insert Savings Asset Account
             dataLayer.Setup(x => x.InsertRecord(
                 It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
                 It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfSavingsAssetAccountInsertValues &&
@@ -415,7 +593,15 @@ namespace PloutosMain.Tests.Repositories
                     (AssetAccountType)y[DataObjects.Accounts.Columns.AssetAccountType] == expectedSavingsAssetAccount.AssetAccountType &&
                     (decimal)y[DataObjects.Accounts.Columns.InterestRate] == expectedSavingsAssetAccount.InterestRate)))
                 .Returns(CreateMockSavingsAssetAccountDataTable());
-            return dataLayer;
+            //Update Savings Asset Account
+            dataLayer.Setup(x => x.UpdateRecord(
+                It.Is<DataObjects.DbTarget>(y => y == DataObjects.DbTarget.Account),
+                It.Is<Dictionary<string, object>>(y => y.Count == expectedNumberOfSavingsAssetAccountUpdateValues &&
+                    (string)y[DataObjects.Accounts.Columns.Name] == expectedSavingsAssetAccount.Name &&
+                    (decimal)y[DataObjects.Accounts.Columns.Balance] == expectedSavingsAssetAccount.Balance &&
+                    (decimal)y[DataObjects.Accounts.Columns.InterestRate] == expectedSavingsAssetAccount.InterestRate),
+                It.Is<int>(y => y == expectedSavingsAssetAccount.Id)))
+                .Returns(CreateMockSavingsAssetAccountDataTable());
         }
         private Mock<ITimePeriodRepo> MockTimePeriodRepoRequests()
         {

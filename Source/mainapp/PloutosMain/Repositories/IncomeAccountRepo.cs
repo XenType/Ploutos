@@ -33,7 +33,7 @@ namespace PloutosMain.Repositories
         {
             return null;
         }
-        public void DeleteAccount(int accountId)
+        public void DeleteAccount(Account oldAccount)
         {
             return;
         }

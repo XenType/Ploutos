@@ -77,12 +77,54 @@ namespace PloutosMain.Repositories
         }
         public Account UpdateAccount(Account modifiedAccount)
         {
-            return null;
+            AssetAccount modifiedAssetAccount = (AssetAccount)modifiedAccount;
+            Dictionary<string, object> valueList = MapBasicAssetAccountToDictionary(modifiedAssetAccount, true);
+            AssetAccount savedAssetAccount = new AssetAccount();
+            DataTable accountData = new DataTable();
+            
+            switch (modifiedAssetAccount.AssetAccountType)
+            {
+                case AssetAccountType.Cash:
+                    accountData = _dataLayer.UpdateRecord(DataObjects.DbTarget.Account, valueList, modifiedAccount.Id);
+                    break;
+                case AssetAccountType.Credit:
+                    CreditAssetAccount creditAssetAccount = (CreditAssetAccount)modifiedAssetAccount;
+                    MapCreditAssetAccountToDictionary(creditAssetAccount, ref valueList, true);
+                    accountData = _dataLayer.UpdateRecord(DataObjects.DbTarget.Account, valueList, modifiedAccount.Id);
+                    break;
+                case AssetAccountType.Savings:
+                    SavingsAssetAccount savingsAssetAccount = (SavingsAssetAccount)modifiedAssetAccount;
+                    MapSavingsAssetAccountToDictionary(savingsAssetAccount, ref valueList, true);
+                    accountData = _dataLayer.UpdateRecord(DataObjects.DbTarget.Account, valueList, modifiedAccount.Id);
+                    break;
+            }
+
+            if (accountData != null && accountData.Rows.Count > 0)
+                savedAssetAccount = BuildAssetAccountFromDataRow(accountData.Rows[0]);
+
+            return savedAssetAccount;
         }
-        public void DeleteAccount(int accountId)
+        public void DeleteAccount(Account oldAccount)
         {
-            // TODO: remove associated time period if found
-            _dataLayer.DeleteRecord(DataObjects.DbTarget.Account, accountId);
+            AssetAccount oldAssetAccount = (AssetAccount)oldAccount;
+
+            if (oldAssetAccount.AssetAccountType != AssetAccountType.Cash)
+                _dataLayer.DeleteRecords(DataObjects.DbTarget.AccountToTimePeriodLink, MapAccountIdToDictionary(oldAssetAccount.Id));
+
+            if (oldAssetAccount.AssetAccountType == AssetAccountType.Credit)
+            {
+                CreditAssetAccount creditAssetAccount = (CreditAssetAccount)oldAssetAccount;
+                if (creditAssetAccount.StatementTimePeriod != null)
+                    _timePeriodRepo.DeleteTimePeriod(creditAssetAccount.StatementTimePeriod.Id);
+            }
+            if (oldAssetAccount.AssetAccountType == AssetAccountType.Savings)
+            {
+                SavingsAssetAccount savingsAssetAccount = (SavingsAssetAccount)oldAssetAccount;
+                if (savingsAssetAccount.StatementTimePeriod != null)
+                    _timePeriodRepo.DeleteTimePeriod(savingsAssetAccount.StatementTimePeriod.Id);
+            }
+            _dataLayer.DeleteRecord(DataObjects.DbTarget.Account, oldAssetAccount.Id);
+
         }
         #endregion
 
@@ -156,17 +198,23 @@ namespace PloutosMain.Repositories
                 savingsAccount.StatementTimePeriod = ownedTimePeriod;
             return savingsAccount;
         }
+        private Dictionary<string, object> MapAccountIdToDictionary(int accountId)
+        {
+            Dictionary<string, object> criteriaList = new Dictionary<string, object>();
+            criteriaList.Add(DataObjects.AccountToTimePeriodLink.Columns.AccountId, accountId);
+            return criteriaList;
+        }
         private Dictionary<string, object> MapTimePeriodOwnerToDictionary(AssetAccount assetAccount)
         {
             Dictionary<string, object> criteriaList = new Dictionary<string, object>();
             criteriaList.Add(DataObjects.TimePeriods.Columns.OwnerAccountId, assetAccount.Id);
             return criteriaList;
         }
-        private Dictionary<string, object> MapBasicAssetAccountToDictionary(AssetAccount assetAccount)
+        private Dictionary<string, object> MapBasicAssetAccountToDictionary(AssetAccount assetAccount, bool forUpdate = false)
         {
             Dictionary<string, object> valueList = new Dictionary<string, object>();
             valueList.Add(DataObjects.Accounts.Columns.Name, assetAccount.Name);
-            valueList.Add(DataObjects.Accounts.Columns.AccountType, assetAccount.AccountType);
+            if (!forUpdate) valueList.Add(DataObjects.Accounts.Columns.AccountType, AccountType.Asset);
             valueList.Add(DataObjects.Accounts.Columns.Balance, assetAccount.Balance);
             return valueList;
         }
@@ -174,16 +222,16 @@ namespace PloutosMain.Repositories
         {
             valueList.Add(DataObjects.Accounts.Columns.AssetAccountType, AssetAccountType.Cash);
         }
-        private void MapCreditAssetAccountToDictionary(CreditAssetAccount assetAccount, ref Dictionary<string, object> valueList)
+        private void MapCreditAssetAccountToDictionary(CreditAssetAccount assetAccount, ref Dictionary<string, object> valueList, bool forUpdate = false)
         {
             valueList.Add(DataObjects.Accounts.Columns.CreditLine, assetAccount.CreditLine);
             valueList.Add(DataObjects.Accounts.Columns.InterestRate, assetAccount.InterestRate);
-            valueList.Add(DataObjects.Accounts.Columns.AssetAccountType, AssetAccountType.Credit);
+            if (!forUpdate) valueList.Add(DataObjects.Accounts.Columns.AssetAccountType, AssetAccountType.Credit);
         }
-        private void MapSavingsAssetAccountToDictionary(SavingsAssetAccount assetAccount, ref Dictionary<string, object> valueList)
+        private void MapSavingsAssetAccountToDictionary(SavingsAssetAccount assetAccount, ref Dictionary<string, object> valueList, bool forUpdate = false)
         {
             valueList.Add(DataObjects.Accounts.Columns.InterestRate, assetAccount.InterestRate);
-            valueList.Add(DataObjects.Accounts.Columns.AssetAccountType, AssetAccountType.Savings);
+            if (!forUpdate) valueList.Add(DataObjects.Accounts.Columns.AssetAccountType, AssetAccountType.Savings);
         }
         #endregion
     }

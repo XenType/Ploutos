@@ -7,7 +7,7 @@ namespace PloutosMain.Repositories
         Account GetAccount(int accountId);
         Account InsertAccount(Account newAccount);
         Account UpdateAccount(Account modifiedAccount);
-        void DeleteAccount(int accountId);
+        void DeleteAccount(Account oldAccount);
 
     }
 }
